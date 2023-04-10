@@ -1,0 +1,77 @@
+version: '2'
+networks:
+  esnet:
+    external: true
+services:
+  es01:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.3.0 #镜像名
+    container_name: es-01 #容器名
+    environment: #指定变量，相当于是直接在启动命令行上指定参数，具体能指定哪些参数要看该镜像支持哪些参数
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m" #指定es的内存大小
+    ulimits:  #生产环境需要配置的系统配置
+      memlock:
+        soft: -1
+        hard: -1
+      nofile:
+        soft: 65536
+        hard: 65536
+    volumes: #挂载，格式为 本地卷：docker容器中卷       
+      - /usr/local/workspace/elk/elasticsearch/data/es01:/usr/share/elasticsearch/data
+      - /usr/local/workspace/elk/elasticsearch/config/es01/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml
+      - /usr/local/workspace/elk/elasticsearch/logs/es01:/user/share/elasticsearch/logs
+      - /usr/local/workspace/elk/elasticsearch/elastic-certificates.p12:/usr/share/elasticsearch/config/elastic-certificates.p12
+    ports:
+      - 9200:9200 
+      - 9300:9300 #es集群之间通信的端口，不可省略，否则，集群状态下会端口冲突
+    networks:           #指定该容器使用的网络
+      - esnet
+  es02:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.3.0
+    container_name: es-02
+    environment:
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+      nofile:
+        soft: 65536
+        hard: 65536
+    volumes:
+      - /usr/local/workspace/elk/elasticsearch/data/es02:/usr/share/elasticsearch/data
+      - /usr/local/workspace/elk/elasticsearch/config/es02/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml
+      - /usr/local/workspace/elk/elasticsearch/logs/es02:/user/share/elasticsearch/logs
+      - /usr/local/workspace/elk/elasticsearch/elastic-certificates.p12:/usr/share/elasticsearch/config/elastic-certificates.p12
+    ports:
+      - 9201:9200
+      - 9301:9300
+    networks:           #可以使用自建网络
+      - esnet
+  kibana:
+    image: docker.elastic.co/kibana/kibana:7.3.0
+    container_name: kib
+    volumes:
+      - /usr/local/workspace/elk/kibana/config/kibana.yml:/usr/share/kibana/config/kibana.yml
+    ports:
+      - 5601:5601
+    networks:
+      - esnet
+    depends_on:
+      - es01
+      - es02
+  logstash:
+    image: docker.elastic.co/logstash/logstash:7.3.0
+    container_name: logstash
+    volumes:
+      - /usr/local/workspace/elk/logstash/config/logstash.yml:/usr/share/logstash/config/logstash.yml
+      - /usr/local/workspace/elk/logstash/pipeline:/usr/share/logstash/pipeline
+    ports:
+      - 5044:5044
+      - 5045:5045
+    environment:
+      LS_JAVA_OPTS: "-Xmx256m -Xms256m"
+    networks:
+      - esnet
+    depends_on:
+      - es01
+      - es02    

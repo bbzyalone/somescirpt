@@ -1,0 +1,60 @@
+#docker-compose.yml 文件如下
+
+version: '2'
+services:
+ redis1:
+  image: publicisworldwide/redis-cluster
+  network_mode: host
+  restart: always
+  volumes:
+   - /opt/redis/8001/data:/data
+  environment:
+   - REDIS_PORT=8001
+
+ redis2:
+  image: publicisworldwide/redis-cluster
+  network_mode: host
+  restart: always
+  volumes:
+   - /opt/redis/8002/data:/data
+  environment:
+   - REDIS_PORT=8002
+
+ redis3:
+  image: publicisworldwide/redis-cluster
+  network_mode: host
+  restart: always
+  volumes:
+   - /opt/redis/8003/data:/data
+  environment:
+   - REDIS_PORT=8003
+
+ redis4:
+  image: publicisworldwide/redis-cluster
+  network_mode: host
+  restart: always
+  volumes:
+   - /opt/redis/8004/data:/data
+  environment:
+   - REDIS_PORT=8004
+
+ redis5:
+  image: publicisworldwide/redis-cluster
+  network_mode: host
+  restart: always
+  volumes:
+   - /opt/redis/8005/data:/data
+  environment:
+   - REDIS_PORT=8005
+
+ redis6:
+  image: publicisworldwide/redis-cluster
+  network_mode: host
+  restart: always
+  volumes:
+   - /opt/redis/8006/data:/data
+  environment:
+   - REDIS_PORT=8006
+#docker-compose -f /conf_path up -d   
+#构建集群
+#docker run --rm -it inem0o/redis-trib create --replicas 1 192.168.0.159:8001 192.168.0.159:8002 192.168.0.159:8003 192.168.0.159:8004 192.168.0.159:8005 192.168.0.159:8006
